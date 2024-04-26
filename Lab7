@@ -1,0 +1,91 @@
+7.1)CREATE USER Rithika2003;
+
+
+7.2)GRANT SELECT, INSERT, UPDATE ON cust, movie TO scott;
+
+
+7.3)GRANT INSERT ON invoice TO scott;
+
+
+7.4) SELECT *
+FROM information_schema.user_privileges
+WHERE grantee = 'Rithika2003';
+
+7.5) BEGIN
+DBMS_OUTPUT.PUT_LINE('Welcome to PL/SQL');
+END;
+
+
+7.6)DECLARE
+    v_num1 NUMBER := 10; -- First numeric value
+    v_num2 NUMBER := 20; -- Second numeric value
+    v_sum NUMBER;        -- Variable to store the sum
+BEGIN
+    -- Calculate the sum
+    v_sum := v_num1 + v_num2;
+    
+    -- Print the result
+    DBMS_OUTPUT.PUT_LINE('The summation of ' || v_num1 || ' and ' || v_num2 || ' is: ' || v_sum);
+END;
+
+
+7.7) DECLARE
+    v_cust_id customers.customer_id%TYPE;
+    v_cust_name customers.name%TYPE;
+BEGIN
+    FOR rec IN (SELECT c.customer_id, c.name, i.issue_date, i.return_date
+                FROM customers c
+                JOIN issues i ON c.customer_id = i.customer_id
+                WHERE i.return_date - i.issue_date < 2)
+    LOOP
+        v_cust_id := rec.customer_id;
+        v_cust_name := rec.name;
+        DBMS_OUTPUT.PUT_LINE('Customer ID: ' || v_cust_id || ', Name: ' || v_cust_name);
+    END LOOP;
+END;
+
+
+7.8) CREATE OR REPLACE FUNCTION calculate_sum(
+    num1 IN NUMBER,
+    num2 IN NUMBER
+) RETURN NUMBER
+IS
+    total_sum NUMBER;
+BEGIN
+    total_sum := num1 + num2;
+    RETURN total_sum;
+END;
+/
+
+DECLARE
+    result NUMBER;
+BEGIN
+    result := calculate_sum(10, 20); -- Pass the two numeric values as parameters
+    DBMS_OUTPUT.PUT_LINE('The sum is: ' || result);
+END;
+/
+
+
+7.9) CREATE OR REPLACE TRIGGER check_movie_price
+BEFORE INSERT ON movie
+FOR EACH ROW
+BEGIN
+    IF :NEW.price > 500 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Movie price cannot exceed 500.');
+    END IF;
+END;
+/
+
+
+7.10) ALTER TABLE Movie
+ADD total_issued INT DEFAULT 0;
+
+CREATE OR REPLACE TRIGGER increment_total_issued
+AFTER INSERT ON Invoice
+FOR EACH ROW
+BEGIN
+    UPDATE Movie
+    SET total_issued = total_issued + 1
+    WHERE movie_id = :NEW.movie_id;
+END;
+/
